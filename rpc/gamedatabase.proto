@@ -1,0 +1,850 @@
+syntax = "proto3";
+
+package service;
+
+// The Metadata service definition.
+service Service {
+  // 根据matchID获取小节比赛的状态
+  rpc GetGameAndBOStatus (GameAndBOStatusRequest) returns (GameAndBOStatusReply) {}
+  // 根据matchID, BO获取当前比赛platformGameID, region
+  rpc GetPlatformGameIDByBO (PlatformGameIDByBORequest) returns (PlatformGameIDByBOReply) {}
+  // 根据matchID获取当前赛程的所有platformGameID集合 及 region
+  rpc GetPlatformGameIDSets (PlatformGameIDSetsRequest) returns (PlatformGameIDSetsReply) {}
+
+  // 根据platformGameID, region获取当前比赛10名选手BP实时状态
+  rpc GetPlayersBPStats (PlayersBPStatsRequest) returns (PlayersBPStatsReply) {}
+  // 根据platformGameID, region获取当前比赛10名选手使用英雄信息
+  rpc GetPlayersUseChampion (PlayersUseChampionRequest) returns (PlayersUseChampionReply) {}
+  // 根据platformGameID, region获取当前比赛10名选手Ban英雄信息
+  rpc GetPlayersBanChampion (PlayersBanChampionRequest) returns (PlayersBanChampionReply) {}
+  // 根据platformGameID, region获取当前战队及选手身份基础信息
+  rpc GetTeamsAndPlayersBasic (TeamsAndPlayersBasicRequest) returns (TeamsAndPlayersBasicReply) {}
+  // 根据platformGameID, region获取选手比赛基础信息
+  rpc GetPlayersBasicInGame (PlayersBasicInGameRequest) returns (PlayersBasicInGameReply) {}
+  // 根据platformGameID, region获取当前选手符文详情
+  rpc GetPlayersPerkRunes (PlayersPerkRunesRequest) returns (PlayersPerkRunesReply) {}
+  // 根据platformGameID, region获取当前比赛基础数据
+  rpc GetGameBasicInfo (GameBasicInfoRequest) returns (GameBasicInfoReply) {}
+
+  // 根据platformGameID, region获取当前比赛团队 经济实时数据(间隔5秒)
+  rpc GetTeamsRealTimeData(TeamsRealTimeDataRequest) returns (TeamsRealTimeDataReply) {}
+  // 根据platformGameID, region获取当前比赛选手 经济实时数据(间隔5秒)
+  rpc GetPlayersRealTimeData (PlayersRealTimeDataRequest) returns (PlayersRealTimeDataReply) {}
+  // 根据platformGameID, region获取当前比赛选手 成装实时数据
+  rpc GetPlayersRealTimeGodInstalled (PlayersRealTimeGodInstalledRequest) returns (PlayersRealTimeGodInstalledReply) {}
+
+  // 根据platformGameID, region获取比赛队伍最终statsUpdate数据
+  rpc GetTeamsFinallyStatsUpdate (TeamsFinallyStatsUpdateRequest) returns (TeamsFinallyStatsUpdateReply) {}
+  // 根据platformGameID, region获取当前比赛各选手最终statsUpdate数据
+  rpc GetPlayersFinallyStatsUpdate (PlayersFinallyStatsUpdateRequest) returns (PlayersFinallyStatsUpdateReply) {}
+
+  // 根据platformGameID, region获取当前比赛所有团战基础数据
+  rpc GetBattlesBasicData (BattlesBasicDataRequest) returns (BattlesBasicDataReply) {}
+  // 根据platformGameID, region获取所有史诗野怪击杀基础数据
+  rpc GetEpicMonsterKillsTeamsBasic (EpicMonsterKillsTeamsBasicRequest) returns (EpicMonsterKillsTeamsBasicReply) {}
+  // 根据platformGameID, region获取镀层摧毁基础信息
+  rpc GetTurretPlateDestroyedSetsBasic (TurretPlateDestroyedSetsBasicRequest) returns (TurretPlateDestroyedSetsBasicReply) {}
+  // 根据platformGameID, region获取各队伍三路镀层摧毁信息
+  rpc GetTurretPlateDestroyedTeamsLanesData (TurretPlateDestroyedTeamsLanesDataRequest) returns (TurretPlateDestroyedTeamsLanesDataReply) {}
+  // 根据platformGameID, region获取各队伍防御塔摧毁信息
+  rpc GetBuildingDestroyedTeamsBasic (BuildingDestroyedTeamsBasicRequest) returns (BuildingDestroyedTeamsBasicReply) {}
+
+  // 获取近一小时所有正在进行的
+  rpc GetOnlineGames (OnlineGamesRequest) returns (OnlineGamesReply) {}
+  // 获取指定比赛的实时日志信息
+  rpc GetGameRealtimeLogs (GameRealtimeLogsRequest) returns (GameRealtimeLogsReply) {}
+}
+
+/* common info */
+message CommonHeadInfo {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+}
+
+/* 坐标结构 */
+message StartPosition {
+  int64 x = 1;
+  int64 z = 2;
+}
+
+/* 英雄详细信息 */
+message ChampionDetail {
+  /* 通过 championID从redis中获取 (gameLive实时更新: 因为可能发生变化) */
+  string chinaFullName = 1; // 中文 全名
+  string chinaName = 2; // 中文 小名
+
+  string baseMainImg = 3; // 英雄主图标
+  string baseIconImg = 4; // 缩略头像
+  string baseLoadingImg = 5; // 游戏加载Logo
+  string baseVideoImg = 6;
+  string baseSourceImg = 7; // 横向Logo
+
+  string championName = 8; //  英雄英文名称
+}
+
+/* 装备信息 */
+message ItemInfo {
+  int64 itemID = 1; // 装备ID
+  string itemName = 2; // 装备名称
+  string iconPath = 3; // 装备Icon
+  int64 itemTotalValue = 4; // 装备总价值
+  int64 amount = 5; // 装备数量(仅限消耗品)
+}
+
+/* 天赋信息 */
+message PerkRune {
+  string styleName = 1; // 天赋所属大类
+  string slotName = 2; // 天赋所属位置
+
+  string runeName = 3; // 天赋名称
+  int64 runeId = 4; // 天赋ID
+  string runeURl = 5; // 天赋图片URL
+}
+
+/* 属性龙击杀个数 */
+message DragonKillsDetail {
+  int64 elderDragon = 1; // 远古龙
+  int64 earthDragon = 2;
+  int64 fireDragon = 3;
+  int64 waterDragon = 4;
+  int64 airDragon = 5;
+}
+
+/* 镀层基础数据 */
+message TurretPlateDestroyedDetail {
+  int64 teamID = 1; // 摧毁队伍ID(100 or 200)
+  int64 gameTime = 2;// 摧毁时间点
+  string lane = 3; // 防御塔对线位置
+  int64 coatingIndex = 4; // 摧毁第几层
+  repeated int64 participantIDSets = 5; // 所有有效参与者
+  StartPosition position = 6; // 防御塔坐标
+}
+
+
+/* GetGameAndBOStatus */
+message GameAndBOStatusRequest {
+  int64 matchID = 1;
+}
+
+message GameAndBOStatusReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  GameAndBOStatus data = 4;
+}
+
+message GameAndBOStatus {
+  /* 0: 未开始; 1: 进行中; 2: 已结束; */
+  int64 matchStatus = 1;
+  int64 winTeamID = 2; // team mysqlID
+
+  repeated TeamAndBOStatus teams = 3;
+  repeated BOStatusDetail BODetail = 4;
+}
+
+message TeamAndBOStatus {
+  int64 teamID = 1; // team mysqlID
+  repeated int64 winBOSession = 3;
+}
+
+message BOStatusDetail {
+  int64 session = 1;
+  /* 0: 未开始; 1: 进行中; 2: 已结束; */
+  int64 status = 2;
+}
+
+/* by tim  用于获取正在进行中的比赛以及比赛日志流*/
+message OnlineGamesRequest {
+  string region = 1;
+  bool filter = 2;/* 是否需要过滤掉无效比赛 */
+  int64 page = 3;
+}
+
+message OnlineGamesReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+  repeated OnlineGames data = 4;
+}
+
+message OnlineGames {
+  string endTime = 1;
+  bool jump = 2;
+  string name = 3;
+  string startTime = 4;
+  string platformGameID = 5;
+  int64 gameTime = 6;
+  int64 maxIndex = 7;
+}
+
+message GameRealtimeLogsRequest {
+  string platformGameID = 1;
+  string region = 2;
+  int64 index = 3;
+}
+
+message GameRealtimeLogsReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+  GameRealtimeLogs data = 4;
+}
+
+message GameRealtimeLogs {
+  int64 maxIndex = 1;
+  int64 index = 2;
+  repeated string data = 3;
+}
+/* by tim end */
+
+/* GetPlatformGameIDByBO */
+message PlatformGameIDByBORequest {
+  int64 matchID = 1;
+  int64 BO = 2;
+}
+
+message PlatformGameIDByBOReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlatformGameIDByBO data = 4;
+}
+
+message PlatformGameIDByBO {
+  string platformGameID = 1;
+  string region = 2;
+}
+
+
+/* GetPlatformGameIDSets */
+message PlatformGameIDSetsRequest {
+  int64 matchID = 1;
+}
+
+message PlatformGameIDSetsReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlatformGameIDSets data = 4;
+}
+
+message PlatformGameIDSets {
+   repeated string platformGameIDSets = 1; // 按比赛进行顺序 (1 --> 9)
+   string region = 2;
+   /* 2020年4月16日 */
+   repeated int64 BOSets = 3;
+}
+
+
+/* GetPlayersBPStats */
+message PlayersBPStatsRequest {
+  string platformGameID = 1;
+  string region = 2;
+}
+
+message PlayersBPStatsReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlayersBPStats data = 4;
+}
+
+message PlayersBPStats {
+  int64 globalStats = 1; // 0: 未开始; 1: ban; 2: pick; 3: 结束
+  map<int64, PlayerBPStats> t100 = 2;
+  map<int64, PlayerBPStats> t200 = 3;
+}
+
+message PlayerBPStats {
+  int64 banStats = 1; // 0: 未开始; 1: 预备; 2: 进行中; 3: 结束
+  int64 tryBanChampionID = 2;
+  int64 banChampionID = 3;
+
+  int64 pickStats = 4; // 0: 未开始; 1: 预备; 2: 进行中; 3: 结束
+  int64 tryPickChampionID = 5;
+  int64 pickChampionID = 6;
+
+  int64 teamID = 7; // 100 or 200
+  int64 participantID = 8; // 1 -- 10
+  int64 accountID = 9; // uin
+}
+
+
+/* GetPlayersUseChampion */
+message PlayersUseChampionRequest {
+  string platformGameID = 1;
+  string region = 2;
+}
+
+message PlayersUseChampionReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlayersUseChampion data = 4;
+}
+
+message PlayersUseChampion {
+  map<int64, PlayerUseChampion> t100 = 1;
+  map<int64, PlayerUseChampion> t200 = 2;
+}
+
+message PlayerUseChampion {
+  int64 teamID = 1; // 100 or 200
+  int64 participantID = 2; // 1 -- 10
+
+  int64 championID = 3;
+  ChampionDetail useChampionDetail = 4;
+}
+
+
+/* GetPlayersBanChampion */
+message PlayersBanChampionRequest {
+  string platformGameID = 1;
+  string region = 2;
+}
+
+message PlayersBanChampionReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlayersBanChampion data = 4;
+}
+
+message PlayersBanChampion {
+  map<int64, PlayerBanChampion> t100 = 1;
+  map<int64, PlayerBanChampion> t200 = 2;
+}
+
+message PlayerBanChampion {
+  int64 teamID = 1; // 100 or 200
+  int64 participantID = 2; // 1 -- 10
+
+  int64 championID = 3;
+  ChampionDetail banChampionDetail = 4;
+}
+
+
+/* GetTeamsAndPlayersBasic */
+message TeamsAndPlayersBasicRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message TeamsAndPlayersBasicReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  TeamsAndPlayersBasic data = 4;
+}
+
+message TeamsAndPlayersBasic {
+  TeamBasicInfo t100 = 1;
+  TeamBasicInfo t200 = 2;
+}
+
+message TeamBasicInfo {
+  int64 teamID = 1; // 100 or 200
+  int64 teamRealID = 2; // 战队mysql对应ID
+  string teamName = 3; // 战队名称
+  string teamEnName = 4; // 战队详细名称
+  string teamHome = 5; // 团队出生地 Red or Blue
+  string teamIconUrl = 6; // 战队图标URL
+
+  repeated int64 playersLocation = 7; // 选手位置排序
+  map<int64, PlayersBasicInfo> playersBasic = 8; // 选手基础信息
+}
+
+message PlayersBasicInfo {
+  int64 participantID = 1; // 1 -- 10
+  string summonerName = 2; // 选手名称(大写)
+  int64 summonerLevel = 3; // 选手账号等级
+  string playerAvatar = 4; // 选手头像URL
+  int64 playerMysqlID = 5; // 选手mysql对应ID
+  int64 accountID = 6; // uin
+  string location = 7; // 选手位置
+
+  string summonerNameMysql = 8; // mysql.tb_player_info.GameName 选手名称
+}
+
+
+/* GetPlayersBasicInGame */
+message PlayersBasicInGameRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message PlayersBasicInGameReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlayersBasicInGame data = 4;
+}
+
+message PlayersBasicInGame {
+  map<int64, PlayerBasicInGame> t100 = 1;
+  map<int64, PlayerBasicInGame> t200 = 2;
+}
+
+message PlayerBasicInGame {
+  int64 teamID = 1; // 100 or 200
+  int64 participantID = 2; // 1 -- 10
+  int64 summonerLevel = 3; // 选手账号等级
+  string playerAvatar = 4; // 选手头像URL
+  int64 playerMysqlID = 5; // 选手mysql对应ID
+  string summonerName = 6; // 选手名称(大写)
+  int64 accountID = 7; // uin
+  string location = 8; // 选手位置
+
+  int64 useChampionID = 9; // pick英雄ID
+  ChampionDetail useChampionDetail = 10; // pick英雄详情
+  int64 banChampionID = 11; // ban英雄ID
+  ChampionDetail banChampionDetail = 12; // ban英雄详情
+  int64 keystoneID = 13; // 基石天赋
+  repeated PerkRune perkRunes = 14; // 4+2天赋详细信息
+
+  string summonerNameMysql = 15; // mysql.tb_player_info.GameName 选手名称
+  /* 2020年3月31日 */
+  string summonerSpell1Name = 16; // 召唤师技能1
+  string summonerSpell2Name = 17; // 召唤师技能2
+}
+
+
+/* GetPlayersPerkRunes */
+message PlayersPerkRunesRequest {
+  string platformGameID = 1;
+  string region = 2;
+}
+
+message PlayersPerkRunesReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlayersPerkRunes data = 4;
+}
+
+message PlayersPerkRunes {
+  map<int64, PlayerPerkRunes> t100 = 1;
+  map<int64, PlayerPerkRunes> t200 = 2;
+}
+
+message PlayerPerkRunes {
+  int64 teamID = 1; // 100 or 200
+  int64 participantID = 2; // 1 -- 10
+
+  int64 keystoneID = 3; // 基石天赋
+  repeated PerkRune perkRunes = 4; // 4+2天赋详细信息
+}
+
+
+/* GetGameBasicInfo */
+message GameBasicInfoRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message GameBasicInfoReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  GameBasicInfo data = 4;
+}
+
+message GameBasicInfo {
+  string gameName = 1;
+  string gameVersion = 2;
+  string startTime = 3; // 游戏开始时间
+  string endTime = 4; // 游戏结束时间
+  int64 durationTime = 5; // 毫秒
+  int64 winningTeam = 6; // 100 or 200
+
+  /* 2020年4月2日 */
+  string bpStartTime = 7; // BP开始时间
+  string bpEndTime = 8; // BP结束时间
+}
+
+
+/* GetTeamsRealTimeData */
+message TeamsRealTimeDataRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+  int64 interval = 4; // 需要数据间隔时间
+}
+
+message TeamsRealTimeDataReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  TeamsRealTimeData data = 4;
+}
+
+message TeamsRealTimeData {
+  TeamRealTimeData t100 = 1;
+  TeamRealTimeData t200 = 2;
+}
+
+message TeamRealTimeData {
+    int64 teamID = 1; // 100 or 200
+    repeated TeamTimePointData realTimeData = 2;
+}
+
+message TeamTimePointData {
+  int64 currTime = 1; // 毫秒
+  int64 totalGold = 2; // 战队当前经济
+}
+
+
+/* GetPlayersRealTimeData */
+message PlayersRealTimeDataRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+  int64 interval = 4; // 需要数据间隔时间
+}
+
+message PlayersRealTimeDataReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlayersRealTimeData data = 4;
+}
+
+message PlayersRealTimeData {
+  map<int64, PlayerRealTimeData> t100 = 1; // 1 -- 10
+  map<int64, PlayerRealTimeData> t200 = 2; // 1 -- 10
+}
+
+message PlayerRealTimeData {
+  int64 teamID = 1; // 100 or 200
+  int64 participantID = 2;
+  repeated AppointPlayerRealTimeData playerData = 3;
+  MaxPlayerRealTimeDataDiff maxPlayerDataDiff = 4;
+}
+
+message AppointPlayerRealTimeData {
+  int64 currTime = 1; // 毫秒
+  int64 totalGold = 2; // 选手当前经济
+}
+
+message MaxPlayerRealTimeDataDiff {
+    int64 maxGoldsDiffTime = 1; // 最大对位经济差时间
+    int64 maxGoldsDiffVal = 2; // 最大对位经济差值
+    int64 totalGold = 3; // 选手当前经济
+}
+
+
+/* GetPlayersRealTimeGodInstalled */
+message PlayersRealTimeGodInstalledRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message PlayersRealTimeGodInstalledReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlayersRealTimeGodInstalled data = 4;
+}
+
+message PlayersRealTimeGodInstalled {
+  map<int64, PlayerRealTimeGodInstalled> t100 = 1; // 1 -- 10
+  map<int64, PlayerRealTimeGodInstalled> t200 = 2; // 1 -- 10
+}
+
+message PlayerRealTimeGodInstalled {
+  int64 teamID = 1; // 100 or 200
+  int64 participantID = 2;
+  repeated AppointPlayerRealTimeGodInstalled playerData = 3;
+}
+
+message AppointPlayerRealTimeGodInstalled {
+  int64 currTime = 1; // 毫秒
+  ItemInfo itemInfo = 2; // 成装信息
+}
+
+
+/* GetTeamsFinallyStatsUpdate */
+message TeamsFinallyStatsUpdateRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message TeamsFinallyStatsUpdateReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  TeamsFinallyStatsUpdate data = 4;
+}
+
+message TeamsFinallyStatsUpdate {
+  TeamFinallyStatsUpdate t100 = 1;
+  TeamFinallyStatsUpdate t200 = 2;
+}
+
+message TeamFinallyStatsUpdate {
+  int64 teamID = 1; // 100 or 200
+
+  int64 totalChampionsKilled = 2; // 总击杀数
+  int64 totalAssists = 3; // 总助攻
+  int64 totalDeaths = 4; // 总死亡
+  int64 totalGolds = 5; // 总经济
+  int64 inhibKills = 6; // 水晶摧毁数
+  int64 towerKills = 7; // 防御塔摧毁数
+
+  int64 baronKills = 8; // 男爵击杀数
+  int64 riftHeraldKills = 9; // 峡谷先锋击杀数
+  int64 elderDragonKills = 10; // 远古龙击杀数
+  repeated string dragonKillsDetail = 11; // 属性龙击杀顺序及种类(不包括远古龙)
+}
+
+
+/* GetPlayersFinallyStatsUpdate */
+message PlayersFinallyStatsUpdateRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message PlayersFinallyStatsUpdateReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  PlayersFinallyStatsUpdate data = 4;
+}
+
+message PlayersFinallyStatsUpdate {
+  map<int64, PlayerFinallyStatsUpdate> t100 = 1; // 1 -- 10
+  map<int64, PlayerFinallyStatsUpdate> t200 = 2; // 1 -- 10
+}
+
+message PlayerFinallyStatsUpdate {
+  int64 teamID = 1; // 100 or 200
+  int64 participantID = 2;
+
+  double totalChampionsDamage = 3; // 总英雄伤害输出
+  double totalTakenDamage = 4; // 总承受伤害
+  double damageTransit = 5; // 输出伤害转换: 对英雄伤害占比/经济占比
+  double takenDamageTransit = 6; // 承受伤害转换: 承受伤害占比/经济占比
+  double attendWarRate = 7; // 参战率: (个人击杀+个人助攻)/团队总击杀
+  int64 oppositeGoldsDiff = 8; // 对位经济
+  int64 totalGolds = 9; // 总经济
+
+  int64 totalAssists = 10; // 总助攻
+  int64 totalDeaths = 11; // 总死亡
+  int64 totalMinionsKilled = 12; // 总补刀
+  int64 totalWardPlaced = 13; // 总插眼数
+  int64 totalWareKilled = 14; // 总排眼数
+  double visionScore = 15; // 视野得分
+  int64 totalChampionsKilled = 16; // 总击杀数
+
+  int64 controlWardPurchasedNum = 17; // 真眼购买数
+  int64 togeDestroyBuildNum = 18; // 参与推塔数
+  int64 controlWardPlaced = 19; // 插真眼数
+  int64 durationTime = 20;//游戏进行时间
+
+  int64 XP = 21; // 当前总经验值
+  int64 level = 22; // 英雄等级
+  // 2020年3月27日
+  int64 currentGold = 23; // 当前存款
+  ItemInfo trinketItem = 24; // 当前饰品装备信息
+  int64 itemsTotalValue = 25; // 当前装备总价值(不包含药水和眼)
+  repeated ItemInfo items = 26; // 当前拥有装备信息
+}
+
+
+/* GetBattlesBasicData */
+message BattlesBasicDataRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message BattlesBasicDataReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  BattlesBasicData data = 4;
+}
+
+message BattlesBasicData {
+  repeated BattleBasicData battlesBasic = 1;
+}
+
+message BattleBasicData {
+  int64 startTime = 1;
+  int64 endTime = 2;
+  string battleType = 3;
+  StartPosition startPosition = 4;
+  BattleTeamBasic t100 = 5;
+  BattleTeamBasic t200 = 6;
+}
+
+message BattleTeamBasic {
+  map<int64, BattlePlayerBasic> battlePlayers = 1;
+
+  int64 teamID = 2; // 100 or 200
+  int64 totalChampionsKills = 3; // 团战总计杀
+  int64 totalAssists = 4; // 团战总助攻
+  int64 totalDeaths = 5; // 团战总死亡
+}
+
+message BattlePlayerBasic {
+  int64 participantID = 1;
+  double championsDamage = 2; // 选手团战造成伤害
+  double takenDamage = 3; // 选手团战承受伤害
+  int64 championsKilled = 4; // 选手团战总击杀
+  int64 assists = 5; // 选手团战助攻
+  int64 deaths = 6; // 选手团战死亡 // if deaths > 0; isAlive = true;
+  /* 2020年3月30日 */
+  bool isAlive = 7; // 是否存活
+  int64 startLevel = 8; // 团战开始英雄等级
+  ItemInfo trinketItem = 9; // 当前饰品装备信息
+  repeated ItemInfo items = 10; // 当前拥有装备信息
+  /* 2020年4月16日 */
+  bool isFight = 11; // 是否参与团战
+}
+
+
+/* GetEpicMonsterKillsTeamsBasic */
+message EpicMonsterKillsTeamsBasicRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message EpicMonsterKillsTeamsBasicReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  EpicMonsterKillsTeamsBasic data = 4;
+}
+
+message EpicMonsterKillsTeamsBasic {
+  repeated EpicMonsterKillTeamBasic t100 = 1; // 按时序
+  repeated EpicMonsterKillTeamBasic t200 = 2; // 按时序
+  EpicMonsterKillTeamBasic firstBaronBasic = 3; // 第一条男爵
+  EpicMonsterKillTeamBasic firstDragonBasic = 4; // 第一条属性龙
+  EpicMonsterKillTeamBasic firstRiftHeraldBasic = 5; // 第一条峡谷先锋
+}
+
+message EpicMonsterKillTeamBasic {
+  int64 gameTime = 1; // 击杀时间点
+  int64 killerTeamID = 2; // 击杀队伍ID(100 or 200)
+  int64 killerID = 3; // 击杀者platformGameID
+  repeated int64 assistantsID = 4; // 所有助攻者platformGameID
+  string monsterType = 5; // 怪物类型
+  string dragonType = 6; // 属性龙类型(monsterType=dragon)
+  StartPosition position = 7; // 击杀坐标
+}
+
+
+/* GetTurretPlateDestroyedSetsBasic */
+message TurretPlateDestroyedSetsBasicRequest {
+  string platformGameID = 1;
+  string region = 2;
+}
+
+message TurretPlateDestroyedSetsBasicReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  TurretPlateDestroyedSetsBasic data = 4;
+}
+
+message TurretPlateDestroyedSetsBasic {
+  repeated TurretPlateDestroyedDetail basicData = 1;
+}
+
+
+/* GetTurretPlateDestroyedTeamsLanesData */
+message TurretPlateDestroyedTeamsLanesDataRequest {
+  string platformGameID = 1;
+  string region = 2;
+}
+
+message TurretPlateDestroyedTeamsLanesDataReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  TurretPlateDestroyedTeamsLanesData data = 4;
+}
+
+message TurretPlateDestroyedTeamsLanesData {
+  TurretPlateDestroyedTeamLanes t100 = 1; // 按时序
+  TurretPlateDestroyedTeamLanes t200 = 2; // 按时序
+}
+
+message TurretPlateDestroyedTeamLanes {
+  repeated TurretPlateDestroyedDetail top = 1; // 上路镀层摧毁数据集合(按时序)
+  repeated TurretPlateDestroyedDetail mid = 2; // 中路镀层摧毁数据集合(按时序)
+  repeated TurretPlateDestroyedDetail bot = 3; // 下路镀层摧毁数据集合(按时序)
+}
+
+
+/* GetBuildingDestroyedTeamsBasic */
+message BuildingDestroyedTeamsBasicRequest {
+  string platformGameID = 1;
+  string region = 2;
+
+  int64 delayed = 3;
+}
+
+message BuildingDestroyedTeamsBasicReply {
+  bool success = 1;
+  int64 errCode = 2;
+  string errMsg = 3;
+
+  BuildingDestroyedTeamsBasic data = 4;
+}
+
+message BuildingDestroyedTeamsBasic {
+  repeated BuildingDestroyedBasic t100 = 1; // 按时序
+  repeated BuildingDestroyedBasic t200 = 2; // 按时序
+}
+
+message BuildingDestroyedBasic {
+  int64 gameTime = 1; // 摧毁时间点
+  int64 killerTeamID = 2; // 击杀队伍ID(100 or 200)
+  int64 lastHitter = 3; // 击杀者platformGameID (0: 小兵摧毁; 1-10: 英雄摧毁)
+  repeated int64 assistantsID = 4; // 所有助攻者platformGameID
+  string lane = 5; // 防御塔对线位置 ("top":上路; "mid": 中路; "bot": 下路)
+  string turretTier = 6; // 防御塔第几层 (outer: 外层; inner: 内层; base: 高地; nexus: 门牙)
+  string buildingType = 7; // 建筑物类型 (inhibitor: 水晶; turret: 防御塔)
+  StartPosition position = 8; // 击杀坐标
+}
+

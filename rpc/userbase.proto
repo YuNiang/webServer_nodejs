@@ -1,0 +1,395 @@
+//protoc --go_out=plugins=grpc:. *.proto
+syntax = "proto3";
+
+package service;
+
+service UserBaseService {
+    /**
+    * 登录鉴权
+    */
+    rpc Login (LoginRequest) returns (LoginResponse) {
+    }
+
+    /**
+     * 注册生成uid
+     */
+    rpc Register (RegisterRequest) returns (RegisterResponse){
+    }
+
+    /**
+    * 通过Uid 获取用户信息
+    */
+    rpc GetUserInfo (UserInfoRequest) returns (UserInfoResponse) {
+    }
+
+    /**
+    * 通过Uid Plat 获取用户第三方平台信息
+    */
+    rpc GetThirdInfo (ThirdInfoRequest) returns (ThirdInfoResponse) {
+    }
+
+    /**
+    * 绑定第三方平台
+    */
+    rpc Bind (BindRequest) returns (BindResponse) {
+    }
+
+    /**
+    * 通过第三方平台以及uuid 来获取用户内部唯一uid
+    */
+    rpc GetUidByPlatUuid (GetUidByPlatUuidRequest) returns (GetUidByPlatUuidResponse) {
+    }
+
+    /**
+    * 解除绑定
+    */
+    rpc UnBind(UnBindRequest) returns (UnBindResponse){
+    }
+
+    /**
+    * 发送验证码
+    */
+    rpc SendCaptcha(SendCaptchaRequest) returns(SendCaptchaResponse){
+    }
+}
+
+message RegisterRequest{
+    /**
+     * 注册来源平台名
+     */
+    string plat = 1;
+
+    string appid = 2;
+
+    string openid = 3;
+
+    string uuid = 4;
+
+    /**
+    * 调用方业务名[lplplus]
+    */
+    string business = 5;
+
+    string serial = 6;
+     /**
+      * 国家或地区区号
+      */
+    string areaCode = 7;
+}
+
+message RegisterResponse{
+    bool success = 1;
+
+    string errMsg = 2;
+
+    int32 errCode = 3;
+
+    string uid = 4;
+}
+
+
+message SendCaptchaRequest{
+    /**
+     * 接收地址,手机号码或邮箱，如果是手机号码，需要补全国家区号
+     */
+    string endpoint = 1;
+
+    /**
+     * 接收地址类型，[mobile,email]
+     */
+    string endpointType = 2;
+    /**
+     * 全生命周期流水号
+     */
+    string serial = 3;
+
+    string business = 4;
+     /**
+      * 国家或地区区号
+      */
+    string areaCode = 5;
+}
+
+message SendCaptchaResponse{
+
+    bool success = 1;
+
+    string errMsg = 2;
+
+    int32 errCode = 3;
+    /**
+     * 验证码凭证
+     */
+    string token = 4;
+}
+
+
+message LoginRequest{
+	/**
+	 * 登录的平台 传 [wx,qq,mobile]
+	 */
+	string plat = 1;
+	/**
+	 * 平台返回的code信息
+	 */
+	string code = 2;
+	/**
+	 * scope
+	 */
+	string scope = 3;
+    /**
+     * appid
+     */
+    string appid = 4;
+    /**
+     * 回调地址
+     */
+    string redirect = 5;
+    /**
+     * access_token 用于OAuth client 模式登录，当client模式登录时不为空
+     */
+    string access_token = 6;
+    /**
+     * openid 用于OAuth client 模式登录，当client模式登录时不为空
+     */
+    string openid = 7;
+    /**
+     * 登录模式 [client,server],目前仅有qq有client 模式
+     */
+    string ltype = 8;
+    /**
+     * 全生命周期流水号
+     */     
+    string serial = 9;
+    /**
+     * 短信验证token
+     */
+     string smsToken = 10;
+    /**
+     * 当登录模式为mobile时，传手机号码
+     */
+     string phone = 11;
+     /**
+      * 当登录模式为mobile时，传验证码
+      */
+     string captcha = 12;
+     /**
+      * 调用方业务名[lplplus]
+      */
+     string business = 13;
+     /**
+      * 国家或地区区号
+      */
+     string areaCode = 14;
+}
+
+message LoginResponse {
+	/**
+	 * 是否登录成功
+	 */
+    bool success = 1;
+
+    string errMsg = 2;
+
+    int32 errCode = 3;
+
+    LoginResult loginResult = 4;
+}
+
+
+message BindRequest {
+
+    string uid = 1;
+
+    string plat = 2;
+
+    string appid = 3;
+
+    string openid = 4;
+
+    string uuid = 5;
+
+    string serial = 6;
+
+    string business = 7;
+
+    string areaCode = 8;
+}
+
+message BindResponse {
+    /**
+     * 是否绑定成功
+     */
+    bool success = 1;
+
+    string errMsg = 2;
+
+    int32 errCode = 3;
+}
+
+
+
+
+message UnBindRequest{
+	/**
+	 * 需要解绑的平台
+	 */
+	string plat = 1;
+    /**
+     * 用户uid
+     */
+    string uid = 2;
+    /**
+     * 平台用户uuid
+     */
+    string uuid = 3;
+    /**
+     * 平台appid
+     */
+    string appid = 4;
+    /**
+     * 全生命周期流水号
+     */
+    string serial = 5;
+
+    string business = 6;
+}
+
+message UnBindResponse{
+	/**
+	 * 操作是否成功
+	 */
+    bool success = 1;
+
+    string errMsg = 2;
+
+    int32 errCode = 3;
+}
+
+message UserInfoRequest {
+    string uid = 1;
+    /**
+     * 全生命周期流水号
+     */
+    string serial = 2;
+
+    bool refresh = 3;
+
+    string business = 4;
+}
+
+message UserInfoResponse {
+	/**
+	 * 调用是否成功
+	 */
+    bool success = 1;
+
+    string errMsg = 2;
+
+    int32 errCode = 3;
+
+    UserInfo userInfo = 4;
+}
+
+message LoginResult {
+    /**
+     * 用户uid
+     */
+    string uid = 1;
+    /**
+     * 是否已注册
+     */
+    bool registered = 2;
+    /**
+     * 是否已绑定手机
+     */
+    bool bindMobile = 3;
+
+    string plat = 4;
+
+    string appid = 5;
+
+    string uuid = 6;
+
+    string openid = 7;
+
+    string areaCode = 8;
+}
+
+message UserInfo{
+    /**
+     * 用户uid
+     */
+    string uid = 1;
+	/**
+	 * 是否已注册
+	 */
+    bool registered = 2;
+	/**
+	 * 是否已绑定手机
+	 */
+    bool bindMobile = 3;
+    /**
+     * 用户平台详细信息
+     */
+    repeated PlatInfo plats = 4;
+}
+
+message ThirdInfoRequest{
+    /**
+     * 用户uid
+     */
+    string uid = 1;
+	/**
+	 * 登录的平台 传 [wx,qq]
+	 */
+	string plat = 2;
+    /**
+     * appid
+     */
+    string appid = 3;
+    /**
+     * refresh 是否强制获取，跳过缓存
+     */
+    bool refresh = 4;
+    /**
+     * 全生命周期流水号
+     */
+    string serial = 5;
+
+    string business = 6;
+}
+
+message ThirdInfoResponse{
+    bool success = 1;
+
+    string errMsg = 2;
+
+    int32 errCode = 3;
+
+	string avatar = 4;
+
+	string name = 5;
+}
+
+message PlatInfo{
+    string plat = 1;
+    string appid = 2;
+    string openid = 3;
+    string uuid = 4;
+    string areaCode = 5;
+}
+
+message GetUidByPlatUuidRequest{
+    string plat = 1;
+    string uuid = 2;
+    string serial = 3;
+}
+
+message GetUidByPlatUuidResponse{
+    bool success = 1;
+    string errMsg = 2;
+    int32 errCode = 3;
+    string uid = 4;
+}
+

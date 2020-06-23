@@ -1,0 +1,79 @@
+// Copyright 2015 gRPC authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package service;
+
+// The Metadata service definition.
+service Service {
+  // send common code
+  rpc SendCommonCode(SendCommonCodeRequest) returns (SendReply) {}
+  // send common message
+  rpc SendCommonMessage(SendCommonMessageRequest) returns (SendReply) {}
+  // send template message
+  rpc SendTemplateMessage(SendTemplateMessageRequest) returns (SendReply) {}
+  // validate
+  rpc Validate(ValidateRequest) returns (ValidateReply) {}
+  // use
+  rpc Use(UseRequest) returns (UseReply) {}
+}
+
+message SendCommonCodeRequest {
+  string endpoint = 1;
+  string endpointType = 2;
+}
+
+message SendCommonMessageRequest {
+  string endpoint = 1;
+  string endpointType = 2;
+  string subject = 3;
+  string message = 4;
+}
+
+message SendTemplateMessageRequest {
+  string endpoint = 1;
+  string endpointType = 2;
+  string templateID = 3;
+  repeated string params = 4;
+}
+
+message ValidateRequest {
+  string token = 1;
+  string endpoint = 2;
+  string code = 3;
+}
+
+message UseRequest { string token = 1; }
+
+message SendReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  SmsLog data = 4;
+}
+
+message ValidateReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+}
+
+message UseReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+}
+
+message SmsLog { string token = 1; }

@@ -1,0 +1,258 @@
+// Copyright 2015 gRPC authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package service;
+
+// The Metadata service definition.
+service Service {
+  // query player by id
+  rpc QueryPlayerByID(QueryPlayerByIDRequest) returns (SinglePlayerReply) {}
+  // query player by palyer des
+  rpc QueryPlayerByPlayerDes(QueryPlayerByPlayerDesRequest)
+      returns (SinglePlayerReply) {}
+  // query player by game name
+  rpc QueryPlayerByGameName(QueryPlayerByGameNameRequest)
+      returns (SinglePlayerReply) {}
+  // query player by team id
+  rpc QueryPlayerByTeamID(QueryPlayerByTeamIDRequest)
+      returns (MultiplePlayerReply) {}
+
+  // query team by id
+  rpc QueryTeamByID(QueryTeamByIDRequest) returns (SingleTeamReply) {}
+  // query team by team des
+  rpc QueryTeamByTeamDes(QueryTeamByTeamDesRequest) returns (SingleTeamReply) {}
+  // query team by team des
+  rpc QueryTeamByIsLPL(QueryTeamByIsLPLRequest) returns (MultipleTeamReply) {}
+  // query team by season id
+  rpc QueryTeamBySeasonID(QueryTeamBySeasonIDRequest)
+      returns (MultipleTeamReply) {}
+
+  // query match by id
+  rpc QueryMatchByID(QueryMatchByIDRequest) returns (SingleMatchReply) {}
+  // query match
+  rpc QueryMatch(QueryMatchRequest) returns (PaginationMatchReply) {}
+
+  // query season by status
+  rpc QuerySeasonByStatus(QuerySeasonByStatusRequest)
+      returns (MultipleSeasonReply) {}
+
+  // query team first by round
+  rpc QueryTeamFirstByRound(QueryTeamFirstByRoundRequest)
+      returns (MultipleTeamFirstReply) {}
+}
+
+message CommonReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  string data = 4;
+}
+
+message QueryPlayerByIDRequest { int64 id = 1; }
+
+message QueryPlayerByPlayerDesRequest { string PlayerDes = 1; }
+
+message QueryPlayerByGameNameRequest { string GameName = 1; }
+
+message QueryPlayerByTeamIDRequest { int64 TeamID = 1; }
+
+message SinglePlayerReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  PlayerInfo data = 4;
+}
+
+message MultiplePlayerReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated PlayerInfo data = 4;
+}
+
+message PlayerInfo {
+  int64 id = 1;
+  string PlayerDes = 2;
+  string GameName = 3;
+  string PlayerPos = 4;
+  int64 TeamID = 5;
+  string PlayerInternalAvatar = 6;
+  string PlayerAvatar = 7;
+  string PlayerEmoji = 8;
+  int64 Exp = 9;
+  int64 Rank = 10;
+  string PlayerEmoji1 = 11;
+  string PlayerEmoji2 = 12;
+  string PlayerEmoji3 = 13;
+  string BigAvatar = 14;
+}
+
+message QueryTeamByIDRequest { int64 id = 1; }
+
+message QueryTeamByTeamDesRequest { string TeamDes = 1; }
+
+message QueryTeamByIsLPLRequest { int64 IsLPL = 1; }
+
+message QueryTeamBySeasonIDRequest { int64 SeasonID = 1; }
+
+message SingleTeamReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  TeamInfo data = 4;
+}
+
+message MultipleTeamReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated TeamInfo data = 4;
+}
+
+message TeamInfo {
+  int64 id = 1;
+  string TeamDes = 2;
+  string TeamEnDes = 3;
+  string TeamInternalLogo = 4;
+  string TeamLogo = 5;
+  int64 Exp = 6;
+  int64 IsLPL = 7;
+  int64 Rank = 8;
+}
+
+message QueryTeamFirstByRoundRequest {
+  int64 iMatchId = 1;
+  int64 iBo = 2;
+}
+
+message SingleTeamFirstReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  TeamFirst data = 4;
+}
+
+message MultipleTeamFirstReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated TeamFirst data = 4;
+}
+
+message TeamFirst {
+  int64 id = 1;
+  int64 iMatchId = 2;
+  int64 iTeamId = 3;
+  string sTeamName = 4;
+  string sSide = 5;
+  int64 iSup = 6;
+  int64 iJug = 7;
+  int64 iMid = 8;
+  int64 iTop = 9;
+  int64 iAdc = 10;
+  string dtUpdateTime = 11;
+  int64 iBo = 12;
+  int64 iFirstChoose = 13;
+  string dtAbortTime = 14;
+  string dtPublishTime = 15;
+  string sModifyBy = 16;
+  string sModifyName = 17;
+  int64 iModifyBySystem = 18;
+  PlayerInfo TopInfo = 19;
+  PlayerInfo JugInfo = 20;
+  PlayerInfo MidInfo = 21;
+  PlayerInfo SupInfo = 22;
+  PlayerInfo AdcInfo = 23;
+}
+
+message QueryMatchByIDRequest { int64 id = 1; }
+
+message QueryMatchRequest {
+  int64 page = 1;
+  int64 size = 2;
+  repeated string order = 3;
+  string CityCode = 4;
+  string MatchStart = 5;
+  int64 iSeason = 6;
+  int64 TeamID = 7;
+}
+
+message SingleMatchReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  MatchInfo data = 4;
+}
+
+message MultipleMatchReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated MatchInfo data = 4;
+}
+
+message PaginationMatchReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  PaginationMatch data = 4;
+}
+
+message PaginationMatch {
+  int64 count = 1;
+  repeated MatchInfo rows = 2;
+}
+
+message MatchInfo {
+  int64 id = 1;
+  string MatchLocation = 2;
+  int64 BO = 3;
+  int64 CurrentRound = 4;
+  string TeamInfo = 5;
+  string MatchStart = 6;
+  string CityCode = 7;
+  int64 IsOnGoing = 8;
+  string CmtInfo = 9;
+  int64 iSeason = 10;
+  repeated TeamInfo TeamInfos = 11;
+  repeated int64 Scores = 12;
+  int64 Status = 13;
+  repeated string PlatformGameIDs = 14;
+}
+
+message QuerySeasonByStatusRequest { int64 iOpen = 1; }
+
+message SingleSeasonReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  SeasonInfo data = 4;
+}
+
+message MultipleSeasonReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated SeasonInfo data = 4;
+}
+
+message SeasonInfo {
+  int64 id = 1;
+  string SeasonDesc = 2;
+  string StartTime = 3;
+  string EndTime = 4;
+  int64 iOpen = 5;
+}

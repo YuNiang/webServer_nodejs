@@ -1,0 +1,646 @@
+// Copyright 2015 gRPC authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package service;
+
+// The Metadata service definition.
+service Service {
+
+  // query all route service
+  rpc QueryAllRouteService(QueryAllRouteServiceRequest)
+      returns (MultipleRouteServiceReply) {}
+
+  // query route by id
+  rpc QueryRouteByID(QueryRouteByIDRequest) returns (SingleRouteReply) {}
+  // query all route
+  rpc QueryAllRoute(QueryAllRouteRequest) returns (MultipleRouteReply) {}
+  // query route
+  rpc QueryRoute(QueryRouteRequest) returns (PaginationRouteReply) {}
+  // save route
+  rpc SaveRoute(SaveRouteRequest) returns (SingleRouteReply) {}
+  // update route
+  rpc UpdateRoute(UpdateRouteRequest) returns (SingleRouteReply) {}
+  // delete route
+  rpc DeleteRoute(DeleteRouteRequest) returns (SingleRouteReply) {}
+
+  // query role by id
+  rpc QueryRoleByID(QueryRoleByIDRequest) returns (SingleRoleReply) {}
+  // query all role
+  rpc QueryAllRole(QueryAllRoleRequest) returns (MultipleRoleReply) {}
+  // query role
+  rpc QueryRole(QueryRoleRequest) returns (PaginationRoleReply) {}
+  // save role
+  rpc SaveRole(SaveRoleRequest) returns (SingleRoleReply) {}
+  // update role
+  rpc UpdateRole(UpdateRoleRequest) returns (SingleRoleReply) {}
+  // delete role
+  rpc DeleteRole(DeleteRoleRequest) returns (SingleRoleReply) {}
+
+  // query role route by id
+  rpc QueryRoleRouteByID(QueryRoleRouteByIDRequest)
+      returns (SingleRoleRouteReply) {}
+  // query role route by role id
+  rpc QueryRoleRouteByRoleID(QueryRoleRouteByRoleIDRequest)
+      returns (MultipleRoleRouteReply) {}
+  // save role route
+  rpc SaveRoleRoute(SaveRoleRouteRequest) returns (SingleRoleRouteReply) {}
+  // update role route
+  rpc UpdateRoleRoute(UpdateRoleRouteRequest) returns (SingleRoleRouteReply) {}
+  // delete role route
+  rpc DeleteRoleRoute(DeleteRoleRouteRequest) returns (SingleRoleRouteReply) {}
+
+  // query app by id
+  rpc QueryAppByID(QueryAppByIDRequest) returns (SingleAppReply) {}
+  // query app
+  rpc QueryApp(QueryAppRequest) returns (PaginationAppReply) {}
+  // save app
+  rpc SaveApp(SaveAppRequest) returns (SingleAppReply) {}
+  // update app
+  rpc UpdateApp(UpdateAppRequest) returns (SingleAppReply) {}
+  // delete app
+  rpc DeleteApp(DeleteAppRequest) returns (SingleAppReply) {}
+
+  // query app role by id
+  rpc QueryAppRoleByID(QueryAppRoleByIDRequest) returns (SingleAppRoleReply) {}
+  // query app role by app id
+  rpc QueryAppRoleByAppID(QueryAppRoleByAppIDRequest)
+      returns (MultipleAppRoleReply) {}
+  // save app role
+  rpc SaveAppRole(SaveAppRoleRequest) returns (SingleAppRoleReply) {}
+  // update app role
+  rpc UpdateAppRole(UpdateAppRoleRequest) returns (SingleAppRoleReply) {}
+  // delete app role
+  rpc DeleteAppRole(DeleteAppRoleRequest) returns (SingleAppRoleReply) {}
+
+  // query user by id
+  rpc QueryUserByID(QueryUserByIDRequest) returns (SingleUserReply) {}
+  // query user by role id
+  rpc QueryUserByRoleID(QueryUserByRoleIDRequest)
+      returns (PaginationUserReply) {}
+  // query user
+  rpc QueryUser(QueryUserRequest) returns (PaginationUserReply) {}
+  // save user
+  rpc SaveUser(SaveUserRequest) returns (SingleUserReply) {}
+  // update user
+  rpc UpdateUser(UpdateUserRequest) returns (SingleUserReply) {}
+  // delete user
+  rpc DeleteUser(DeleteUserRequest) returns (SingleUserReply) {}
+
+  // query user role by id
+  rpc QueryUserRoleByID(QueryUserRoleByIDRequest)
+      returns (SingleUserRoleReply) {}
+  // query user role by user id
+  rpc QueryUserRoleByUserID(QueryUserRoleByUserIDRequest)
+      returns (MultipleUserRoleReply) {}
+  // save user role
+  rpc SaveUserRole(SaveUserRoleRequest) returns (SingleUserRoleReply) {}
+  // update user role
+  rpc UpdateUserRole(UpdateUserRoleRequest) returns (SingleUserRoleReply) {}
+  // delete user role
+  rpc DeleteUserRole(DeleteUserRoleRequest) returns (SingleUserRoleReply) {}
+  // delete user role by user id and role id
+  rpc DeleteUserRoleByUserIDAndRoleID(DeleteUserRoleByUserIDAndRoleIDRequest)
+      returns (SingleUserRoleReply) {}
+
+  // login by weChat
+  rpc LoginByWeChat(LoginByWeChatRequest) returns (LoginResultReply) {}
+  // login by appID
+  rpc LoginByAppID(LoginByAppIDRequest) returns (LoginResultReply) {}
+  // login by account
+  rpc LoginByAccount(LoginByAccountRequest) returns (LoginResultReply) {}
+  // login by code
+  rpc LoginByCode(LoginByCodeRequest) returns (LoginResultReply) {}
+  // send login code
+  rpc SendLoginCode(SendLoginCodeRequest) returns (SendLoginCodeResultReply) {}
+  // update jwt payload
+  rpc UpdateJWTPayload(UpdateJWTPayloadRequest)
+      returns (UpdateJWTPayloadResultReply) {}
+  // validate route
+  rpc ValidateRoute(ValidateRouteRequest) returns (ValidateRouteResultReply) {}
+}
+
+/////////////////route service////////////////////
+message QueryAllRouteServiceRequest {}
+
+message MultipleRouteServiceReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated RouteService data = 4;
+}
+
+message RouteService {
+  // int64 id = 1;
+  string name = 2;
+}
+
+/////////////////route////////////////////
+
+message QueryRouteByIDRequest { int64 id = 1; }
+
+message QueryAllRouteRequest { repeated string services = 1; }
+
+message QueryRouteRequest {
+  int64 page = 1;
+  int64 size = 2;
+  repeated string order = 3;
+  repeated string services = 4;
+}
+
+message SaveRouteRequest {
+  string service = 2;
+  string method = 3;
+  string path = 4;
+  string remark = 5;
+}
+
+message UpdateRouteRequest {
+  int64 id = 1;
+  string service = 2;
+  string method = 3;
+  string path = 4;
+  string remark = 5;
+}
+
+message DeleteRouteRequest { int64 id = 1; }
+
+message SingleRouteReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  Route data = 4;
+}
+
+message MultipleRouteReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated Route data = 4;
+}
+
+message PaginationRouteReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  PaginationRoute data = 4;
+}
+
+message PaginationRoute {
+  int64 count = 1;
+  repeated Route rows = 2;
+}
+
+message Route {
+  int64 id = 1;
+  string service = 2;
+  string method = 3;
+  string path = 4;
+  string remark = 5;
+  string createdAt = 6;
+  string updatedAt = 7;
+}
+
+/////////////////role////////////////////
+
+message QueryRoleByIDRequest { int64 id = 1; }
+
+message QueryAllRoleRequest { repeated string codes = 1; }
+
+message QueryRoleRequest {
+  int64 page = 1;
+  int64 size = 2;
+  repeated string order = 3;
+}
+
+message SaveRoleRequest {
+  string name = 2;
+  string code = 3;
+  string remark = 4;
+}
+
+message UpdateRoleRequest {
+  int64 id = 1;
+  string name = 2;
+  string code = 3;
+  string remark = 4;
+}
+
+message DeleteRoleRequest { int64 id = 1; }
+
+message SingleRoleReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  Role data = 4;
+}
+
+message MultipleRoleReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated Role data = 4;
+}
+
+message PaginationRoleReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  PaginationRole data = 4;
+}
+
+message PaginationRole {
+  int64 count = 1;
+  repeated Role rows = 2;
+}
+
+message Role {
+  int64 id = 1;
+  string name = 2;
+  string code = 3;
+  string remark = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
+}
+
+/////////////////roleRoute////////////////////
+
+message QueryRoleRouteByIDRequest { int64 id = 1; }
+
+message QueryRoleRouteByRoleIDRequest { int64 roleID = 1; }
+
+message SaveRoleRouteRequest {
+  int64 roleID = 2;
+  int64 routeID = 3;
+  string routeFilter = 4;
+}
+
+message UpdateRoleRouteRequest {
+  int64 id = 1;
+  int64 roleID = 2;
+  int64 routeID = 3;
+  string routeFilter = 4;
+}
+
+message DeleteRoleRouteRequest { int64 id = 1; }
+
+message SingleRoleRouteReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  RoleRoute data = 4;
+}
+
+message MultipleRoleRouteReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated RoleRoute data = 4;
+}
+
+message RoleRoute {
+  int64 id = 1;
+  int64 roleID = 2;
+  int64 routeID = 3;
+  string routeFilter = 4;
+  string createdAt = 5;
+  string updatedAt = 6;
+  Route route = 7;
+}
+
+/////////////////app////////////////////
+
+message QueryAppByIDRequest { int64 id = 1; }
+
+message QueryAppRequest {
+  int64 page = 1;
+  int64 size = 2;
+  repeated string order = 3;
+}
+
+message SaveAppRequest {
+  string name = 2;
+  string email = 3;
+  string remark = 4;
+  string expiredAt = 5;
+}
+
+message UpdateAppRequest {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+  string remark = 4;
+  string expiredAt = 5;
+}
+
+message DeleteAppRequest { int64 id = 1; }
+
+message SingleAppReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  App data = 4;
+}
+
+message MultipleAppReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated App data = 4;
+}
+
+message PaginationAppReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  PaginationApp data = 4;
+}
+
+message PaginationApp {
+  int64 count = 1;
+  repeated App rows = 2;
+}
+
+message App {
+  int64 id = 1;
+  string name = 2;
+  string appID = 3;
+  string secret = 4;
+  string email = 5;
+  string remark = 6;
+  string expiredAt = 7;
+  string createdAt = 8;
+  string updatedAt = 9;
+  repeated Role roles = 10;
+}
+
+/////////////////appRole////////////////////
+
+message QueryAppRoleByIDRequest { int64 id = 1; }
+
+message QueryAppRoleByAppIDRequest { int64 appID = 1; }
+
+message SaveAppRoleRequest {
+  int64 appID = 2;
+  int64 roleID = 3;
+}
+
+message UpdateAppRoleRequest {
+  int64 id = 1;
+  int64 appID = 2;
+  int64 roleID = 3;
+}
+
+message DeleteAppRoleRequest { int64 id = 1; }
+
+message SingleAppRoleReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  AppRole data = 4;
+}
+
+message MultipleAppRoleReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated AppRole data = 4;
+}
+
+message AppRole {
+  int64 id = 1;
+  int64 appID = 2;
+  int64 roleID = 3;
+  string createdAt = 5;
+  string updatedAt = 6;
+  Role role = 7;
+}
+
+/////////////////user////////////////////
+
+message QueryUserByIDRequest { int64 id = 1; }
+
+message QueryUserByRoleIDRequest {
+  int64 page = 1;
+  int64 size = 2;
+  repeated string order = 3; // fixed ["UserID DESC"]
+  repeated int64 roleIDs = 4;
+}
+
+message QueryUserRequest {
+  int64 page = 1;
+  int64 size = 2;
+  repeated string order = 3;
+  string search = 4;
+}
+
+message SaveUserRequest {
+  string phone = 3;
+  string areaCode = 4;
+  string weChatUnionID = 5;
+  string email = 6;
+  string nickname = 7;
+  string IDNumber = 8;
+  string IDName = 9;
+}
+
+message UpdateUserRequest {
+  int64 id = 1;
+  string phone = 3;
+  string areaCode = 4;
+  string weChatUnionID = 5;
+  string email = 6;
+  string nickname = 7;
+  string IDNumber = 8;
+  string IDName = 9;
+}
+
+message DeleteUserRequest { int64 id = 1; }
+
+message SingleUserReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  User data = 4;
+}
+
+message MultipleUserReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated User data = 4;
+}
+
+message PaginationUserReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  PaginationUser data = 4;
+}
+
+message PaginationUser {
+  int64 count = 1;
+  repeated User rows = 2;
+}
+
+message User {
+  int64 id = 1;
+  string username = 2;
+  string phone = 3;
+  string areaCode = 4;
+  string weChatUnionID = 5;
+  string email = 6;
+  string nickname = 7;
+  string IDNumber = 8;
+  string IDName = 9;
+  string lastLoginAt = 10;
+  string createdAt = 11;
+  string updatedAt = 12;
+  repeated Role roles = 13;
+}
+
+/////////////////userRole////////////////////
+
+message QueryUserRoleByIDRequest { int64 id = 1; }
+
+message QueryUserRoleByUserIDRequest { int64 userID = 1; }
+
+message SaveUserRoleRequest {
+  int64 userID = 2;
+  int64 roleID = 3;
+}
+
+message UpdateUserRoleRequest {
+  int64 id = 1;
+  int64 userID = 2;
+  int64 roleID = 3;
+}
+
+message DeleteUserRoleRequest { int64 id = 1; }
+
+message DeleteUserRoleByUserIDAndRoleIDRequest {
+  int64 userID = 1;
+  int64 roleID = 2;
+}
+
+message SingleUserRoleReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  UserRole data = 4;
+}
+
+message MultipleUserRoleReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  repeated UserRole data = 4;
+}
+
+message UserRole {
+  int64 id = 1;
+  int64 userID = 2;
+  int64 roleID = 3;
+  string createdAt = 5;
+  string updatedAt = 6;
+  Role role = 7;
+}
+
+/////////////////auth////////////////////
+
+message LoginByWeChatRequest { string code = 1; }
+
+message LoginByAppIDRequest {
+  string appID = 1;
+  string secret = 2;
+}
+
+message LoginByAccountRequest {
+  string account = 1;
+  string password = 2;
+}
+
+message LoginByCodeRequest {
+  string accountType = 1;
+  string account = 2;
+  string areaCode = 3;
+  string token = 4;
+  string code = 5;
+}
+
+message SendLoginCodeRequest {
+  string accountType = 1;
+  string account = 2;
+  string areaCode = 3;
+}
+
+message UpdateJWTPayloadRequest {
+  string authorization = 1;
+  map<string, string> payload = 2;
+}
+
+message ValidateRouteRequest {
+  string authorization = 2;
+  AuthRoute authRoute = 1;
+}
+
+message LoginResultReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  LoginResultPayload data = 4;
+}
+
+message SendLoginCodeResultReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  SendLoginCodeResult data = 4;
+}
+
+message UpdateJWTPayloadResultReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  UpdateJWTPayloadResult data = 4;
+}
+
+message ValidateRouteResultReply {
+  bool success = 1;
+  string errMsg = 2;
+  int32 errCode = 3;
+  ValidateRouteResult data = 4;
+}
+
+message LoginResultPayload {
+  string UID = 1;
+  string authorization = 2;
+  repeated AuthRoute authRoutes = 3;
+}
+
+message SendLoginCodeResult { string token = 1; }
+
+message UpdateJWTPayloadResult { string authorization = 1; }
+
+message ValidateRouteResult {
+  int64 expire = 1;
+  string UID = 2;
+}
+
+message AuthRoute {
+  string service = 2;
+  string method = 3;
+  string path = 4;
+}
