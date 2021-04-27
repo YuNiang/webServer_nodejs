@@ -40,7 +40,7 @@
     "node-schedule": "^1.2.0",
     "nodemailer": "^4.4.0",
     "npm-run-all": "^3.1.0",
-    "redis": "^2.6.5",
+    "redis": "^3.1.1",
     "request": "^2.79.0",
     "request-promise": "^4.2.2",
     "sequelize": "^3.27.0",
